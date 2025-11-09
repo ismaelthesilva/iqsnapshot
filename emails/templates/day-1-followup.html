@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Did you see your personalized training?</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; padding: 20px 0; }
+    .header h1 { margin: 0; color: #2563eb; font-size: 24px; }
+    .content { background: #ffffff; padding: 30px; }
+    .score-reminder { background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+    .score { font-size: 36px; font-weight: bold; color: #2563eb; }
+    .cta { text-align: center; margin: 30px 0; }
+    .cta a { display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 18px; }
+    .social-proof { background: #f9fafb; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+    .unsubscribe { color: #9ca3af; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧠 Quick Follow-Up on Your IQ Results</h1>
+    </div>
+
+    <div class="content">
+      <p>Hi there,</p>
+
+      <p>Yesterday, you discovered your IQ score with The $1 IQ Snapshot. Congratulations again on taking that first step toward understanding your cognitive baseline!</p>
+
+      <div class="score-reminder">
+        <div class="score">{{iq_score}}</div>
+        <div style="color: #6b7280;">Your IQ Score</div>
+      </div>
+
+      <p><strong>Here's the thing:</strong> Knowing your score is just the beginning. The real question is: <em>What are you going to do with this information?</em></p>
+
+      <p>Most people take an IQ test out of curiosity, then move on with their day. But the top performers? They use insights like this as a <strong>launchpad for deliberate improvement</strong>.</p>
+
+      <h2 style="color: #1f2937;">That's exactly why we created the free training for you.</h2>
+
+      <p>In case you missed it in your results email, here's what you'll discover:</p>
+
+      <ul style="line-height: 1.8;">
+        <li>✓ How to leverage your cognitive strengths (based on your score range)</li>
+        <li>✓ Evidence-based techniques to sharpen focus and memory</li>
+        <li>✓ The daily habits of peak mental performers</li>
+        <li>✓ Simple neuroplasticity exercises that take less than 10 minutes/day</li>
+      </ul>
+
+      <div class="social-proof">
+        <p style="margin: 0; font-style: italic;">"I watched the training right after getting my results. The memory techniques alone have been game-changing for my work. Highly recommend." — Sarah M., IQ Score: 118</p>
+      </div>
+
+      <div class="cta">
+        <a href="{{vsl_url}}">Watch the Free Training →</a>
+      </div>
+
+      <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+        <strong>Reminder:</strong> This training is 100% free to watch. We only recommend it because we genuinely believe it can help you get the most out of your IQ insights.
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+      <p style="font-size: 12px; color: #6b7280;">
+        <strong>Affiliate Disclosure:</strong> The training link above is an affiliate link. If you choose to purchase, we may receive a commission at no extra cost to you. We only recommend products we believe in.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p><strong>The $1 IQ Snapshot</strong><br/>
+      Educational assessment • Non-diagnostic • For entertainment purposes</p>
+      <p class="unsubscribe">
+        <a href="{{unsubscribe_url}}" style="color: #9ca3af;">Unsubscribe</a> | 
+        <a href="https://iq.ismaelsilva.com/legal/privacy" style="color: #9ca3af;">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

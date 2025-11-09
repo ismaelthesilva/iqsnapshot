@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/header'
@@ -18,7 +18,7 @@ interface ResultData {
   bump: boolean
 }
 
-export default function ResultsPage() {
+function ResultsContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
 
@@ -174,5 +174,20 @@ export default function ResultsPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your results...</p>
+        </div>
+      </div>
+    }>
+      <ResultsContent />
+    </Suspense>
   )
 }

@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <h2>3. Data Storage and Security</h2>
           <ul>
             <li>
-              Your score results are stored in Stripe's secure payment metadata and are not stored
+              Your score results are stored in Stripe&apos;s secure payment metadata and are not stored
               in a separate database.
             </li>
             <li>We use industry-standard security measures to protect your data.</li>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
           </ul>
           <p>To exercise these rights, contact us at privacy@ismaelsilva.com</p>
 
-          <h2>8. Children's Privacy</h2>
+          <h2>8. Children&apos;s Privacy</h2>
           <p>
             Our service is not intended for children under 18. We do not knowingly collect data from
             children under 18.

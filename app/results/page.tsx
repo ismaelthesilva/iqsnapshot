@@ -144,7 +144,7 @@ export default function ResultsPage() {
             </div>
 
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-6 mb-6">
-              <h3 className="font-semibold text-xl mb-4">What You'll Discover:</h3>
+              <h3 className="font-semibold text-xl mb-4">What You&apos;ll Discover:</h3>
               <ul className="space-y-3">
                 {resultsPageCopy.vslBenefits.map((benefit, idx) => (
                   <li key={idx} className="flex items-start gap-3">

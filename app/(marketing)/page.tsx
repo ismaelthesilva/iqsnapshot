@@ -89,7 +89,7 @@ export default function LandingPage() {
         {/* What You Get Section */}
         <section className="py-16 px-4 bg-white">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">What You'll Discover</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">What You&apos;ll Discover</h2>
             <div className="grid md:grid-cols-2 gap-6">
               {landingPage.story.whatYouGet.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3">
@@ -141,7 +141,7 @@ export default function LandingPage() {
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Discover Your IQ?</h2>
             <p className="text-lg text-gray-600 mb-8">
-              Join 1,000+ people who've already taken their IQ Snapshot.
+              Join 1,000+ people who&apos;ve already taken their IQ Snapshot.
             </p>
             <div className="max-w-md mx-auto mb-4">
               <div className="flex flex-col sm:flex-row gap-3">

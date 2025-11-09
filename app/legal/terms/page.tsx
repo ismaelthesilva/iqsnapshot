@@ -15,7 +15,7 @@ export default function TermsPage() {
 
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing and using The $1 IQ Snapshot ("Service"), you accept and agree to be bound
+            By accessing and using The $1 IQ Snapshot (&quot;Service&quot;), you accept and agree to be bound
             by the terms and provision of this agreement.
           </p>
 

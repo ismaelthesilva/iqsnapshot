@@ -1,15 +1,24 @@
 import { Resend } from 'resend'
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error('Missing RESEND_API_KEY environment variable')
+// Initialize Resend lazily at runtime to avoid build-time errors
+let resendInstance: Resend | null = null
+
+function getResend() {
+  if (!resendInstance) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('Missing RESEND_API_KEY environment variable')
+    }
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendInstance
 }
 
-if (!process.env.FROM_EMAIL) {
-  throw new Error('Missing FROM_EMAIL environment variable')
+function getFromEmail() {
+  if (!process.env.FROM_EMAIL) {
+    throw new Error('Missing FROM_EMAIL environment variable')
+  }
+  return process.env.FROM_EMAIL
 }
-
-export const resend = new Resend(process.env.RESEND_API_KEY)
-export const FROM_EMAIL = process.env.FROM_EMAIL
 
 export interface ResultEmailData {
   email: string
@@ -107,9 +116,11 @@ export function buildResultEmail(data: ResultEmailData): { subject: string; html
 
 export async function sendResultEmail(data: ResultEmailData): Promise<void> {
   const { subject, html } = buildResultEmail(data)
+  const resend = getResend()
+  const fromEmail = getFromEmail()
 
   await resend.emails.send({
-    from: FROM_EMAIL,
+    from: fromEmail,
     to: data.email,
     subject,
     html,

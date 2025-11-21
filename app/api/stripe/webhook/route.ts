@@ -1,91 +1,277 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { headers } from 'next/headers'
-import Stripe from 'stripe'
-import { stripe } from '@/lib/stripe'
-import { sendResultEmail } from '@/lib/email'
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { Resend } from 'resend';
 
-export const runtime = 'nodejs' // Required for raw body access
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+});
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!
-const AFFILIATE_VSL_URL =
-  process.env.AFFILIATE_VSL_URL || 'https://example.com/course?aff=123'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
-// Track processed events to prevent duplicates
-const processedEvents = new Set<string>()
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.text()
-    const headersList = await headers()
-    const signature = headersList.get('stripe-signature')
+  const body = await req.text();
+  const sig = req.headers.get('stripe-signature');
 
-    if (!signature) {
-      console.error('No stripe signature found')
-      return NextResponse.json({ error: 'No signature' }, { status: 400 })
-    }
-
-    // Verify webhook signature
-    let event: Stripe.Event
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      console.error('Webhook signature verification failed:', message)
-      return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 })
-    }
-
-    // Idempotency check
-    if (processedEvents.has(event.id)) {
-      console.log('Event already processed:', event.id)
-      return NextResponse.json({ received: true })
-    }
-
-    // Handle the event
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
-
-      // Verify payment is completed
-      if (session.payment_status === 'paid') {
-        // Expand payment intent to get metadata
-        const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
-          expand: ['payment_intent'],
-        })
-
-        const metadata =
-          expandedSession.payment_intent &&
-          typeof expandedSession.payment_intent !== 'string'
-            ? expandedSession.payment_intent.metadata
-            : expandedSession.metadata
-
-        if (metadata && metadata.email && metadata.iqScore) {
-          // Build VSL URL with UTM params
-          const vslUrl = new URL(AFFILIATE_VSL_URL)
-          vslUrl.searchParams.set('utm_source', 'iq-snapshot')
-          vslUrl.searchParams.set('utm_medium', 'email')
-          vslUrl.searchParams.set('utm_campaign', metadata.headline || 'A')
-          vslUrl.searchParams.set('session_id', session.id)
-
-          // Send result email
-          await sendResultEmail({
-            email: metadata.email,
-            iqScore: parseInt(metadata.iqScore, 10),
-            percentile: parseInt(metadata.percentile, 10),
-            band: metadata.band,
-            interpretation: metadata.interpretation,
-            vslUrl: vslUrl.toString(),
-          })
-
-          console.log('Result email sent to:', metadata.email)
-          processedEvents.add(event.id)
-        }
-      }
-    }
-
-    return NextResponse.json({ received: true })
-  } catch (error: unknown) {
-    console.error('Webhook handler error:', error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: message }, { status: 500 })
+  if (!sig) {
+    return NextResponse.json({ error: 'No signature' }, { status: 400 });
   }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
+    return NextResponse.json(
+      { error: 'Webhook signature verification failed' },
+      { status: 400 }
+    );
+  }
+
+  // Handle the event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    try {
+      // Get metadata from session
+      const {
+        email,
+        iq_score,
+        raw_score,
+        percentile,
+        band,
+        bump,
+      } = session.metadata || {};
+
+      if (!email || !iq_score) {
+        console.error('Missing required metadata in session:', session.id);
+        return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
+      }
+
+      const hasBump = bump === 'true';
+
+      // Get interpretation from metadata (it's already stored there from checkout)
+      const interpretation = session.metadata?.interpretation || 'Your cognitive assessment results show your current performance level.';
+
+      // Send email with results
+      await resend.emails.send({
+        from: process.env.FROM_EMAIL!,
+        to: email,
+        subject: `Your IQ Snapshot Results - ${iq_score} IQ Score`,
+        html: generateResultsEmail({
+          iqScore: parseInt(iq_score),
+          rawScore: parseInt(raw_score || '0'),
+          percentile: parseInt(percentile || '0'),
+          band,
+          interpretation,
+          hasBump,
+          vslUrl: process.env.NEXT_PUBLIC_AFFILIATE_VSL_URL || '',
+        }),
+      });
+
+      console.log(`✅ Results email sent to ${email} (IQ: ${iq_score}, Bump: ${hasBump})`);
+
+      return NextResponse.json({ received: true });
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+      return NextResponse.json(
+        { error: 'Failed to process webhook' },
+        { status: 500 }
+      );
+    }
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+// Email template
+function generateResultsEmail({
+  iqScore,
+  rawScore,
+  percentile,
+  band,
+  interpretation,
+  hasBump,
+  vslUrl,
+}: {
+  iqScore: number;
+  rawScore: number;
+  percentile: number;
+  band: string;
+  interpretation: string;
+  hasBump: boolean;
+  vslUrl: string;
+}) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your IQ Snapshot Results</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f7fafc;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7fafc; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">
+                Your IQ Snapshot Results
+              </h1>
+              <p style="margin: 10px 0 0 0; color: #e6e6ff; font-size: 16px;">
+                Congratulations on completing your assessment!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Main Results -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              
+              <!-- IQ Score Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7fafc; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+                <tr>
+                  <td align="center">
+                    <div style="font-size: 64px; font-weight: bold; color: #667eea; line-height: 1;">
+                      ${iqScore}
+                    </div>
+                    <div style="font-size: 18px; color: #4a5568; margin-top: 10px; font-weight: 600;">
+                      Your Estimated IQ Score
+                    </div>
+                    <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                      ${band} • Top ${100 - percentile}% Percentile
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Interpretation -->
+              <h2 style="color: #2d3748; font-size: 22px; margin: 0 0 15px 0;">
+                What This Means
+              </h2>
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                ${interpretation}
+              </p>
+
+              <!-- Stats Grid -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td width="33%" style="padding: 20px; background-color: #f7fafc; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold; color: #667eea;">
+                      ${rawScore}/25
+                    </div>
+                    <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                      Correct Answers
+                    </div>
+                  </td>
+                  <td width="2%"></td>
+                  <td width="33%" style="padding: 20px; background-color: #f7fafc; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: bold; color: #667eea;">
+                      ${percentile}%
+                    </div>
+                    <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                      Percentile Rank
+                    </div>
+                  </td>
+                  <td width="2%"></td>
+                  <td width="30%" style="padding: 20px; background-color: #f7fafc; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: #667eea;">
+                      ${band}
+                    </div>
+                    <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                      Classification
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              ${hasBump ? `
+              <!-- PDF Report Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+                <tr>
+                  <td>
+                    <h3 style="margin: 0 0 15px 0; color: #ffffff; font-size: 20px;">
+                      📊 Your Personalized PDF Report
+                    </h3>
+                    <p style="margin: 0 0 20px 0; color: #e6e6ff; font-size: 15px; line-height: 1.5;">
+                      Your detailed cognitive analysis report includes:
+                    </p>
+                    <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #e6e6ff; font-size: 14px;">
+                      <li style="margin-bottom: 8px;">In-depth interpretation of your score</li>
+                      <li style="margin-bottom: 8px;">Cognitive strengths and growth areas</li>
+                      <li style="margin-bottom: 8px;">Personalized recommendations</li>
+                      <li style="margin-bottom: 8px;">Science-backed insights</li>
+                    </ul>
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background-color: #ffffff; border-radius: 6px; padding: 12px 30px;">
+                          <a href="#" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 16px;">
+                            Download Your PDF Report →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+              <!-- VSL CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7fafc; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+                <tr>
+                  <td>
+                    <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 20px;">
+                      🎯 Ready to Maximize Your Potential?
+                    </h3>
+                    <p style="margin: 0 0 20px 0; color: #4a5568; font-size: 15px; line-height: 1.5;">
+                      Now that you know your cognitive baseline, discover proven strategies to enhance your mental performance.
+                    </p>
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; padding: 14px 32px;">
+                          <a href="${vslUrl}" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: block;">
+                            Watch Free Training →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Disclaimer -->
+              <p style="color: #a0aec0; font-size: 12px; line-height: 1.5; margin: 0;">
+                <strong>Important:</strong> This assessment is for educational and entertainment purposes only. It is not a clinical diagnostic tool. Results are estimates based on a limited question set and should not be used for official purposes.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 10px 0; color: #718096; font-size: 14px;">
+                Questions? Reply to this email or visit our website.
+              </p>
+              <p style="margin: 0; color: #a0aec0; font-size: 12px;">
+                © ${new Date().getFullYear()} IQ Snapshot. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
 }

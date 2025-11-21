@@ -31,19 +31,45 @@ export default function TestPage() {
   const isComplete = Object.keys(answers).length === questions.length
 
   const handleAnswer = (questionId: string, answer: string) => {
+    console.log('🔵 handleAnswer called:', { questionId, answer, currentQuestion })
+    
     const newAnswers = { ...answers, [questionId]: answer }
     setAnswers(newAnswers)
 
-    // Auto-advance to next question
-    if (currentQuestion < questions.length - 1) {
+    // Check if this was the last question
+    const totalAnswered = Object.keys(newAnswers).length
+    const isLastQuestion = totalAnswered === questions.length
+
+    console.log('📊 Answer stats:', {
+      questionId,
+      currentQuestionIndex: currentQuestion,
+      currentQuestionNumber: currentQuestion + 1,
+      totalAnswered,
+      totalQuestions: questions.length,
+      isLastQuestion,
+      remainingQuestions: questions.length - totalAnswered,
+      nextQuestionIndex: currentQuestion + 1
+    })
+
+    if (isLastQuestion) {
+      // All questions answered - auto-open paywall after short delay
+      console.log('✅ ALL DONE! Opening paywall - all questions answered!')
       setTimeout(() => {
-        setCurrentQuestion((prev) => prev + 1)
-      }, 300)
-    } else if (Object.keys(newAnswers).length === questions.length) {
-      // Last question answered - auto-open paywall
-      setTimeout(() => {
+        console.log('🎉 Showing paywall now')
         setShowPaywall(true)
       }, 500)
+    } else {
+      // Auto-advance to next question (even if user went back and forth)
+      const nextIndex = currentQuestion + 1
+      if (nextIndex < questions.length) {
+        console.log(`➡️ Advancing from Q${currentQuestion + 1} to Q${nextIndex + 1}`)
+        setTimeout(() => {
+          setCurrentQuestion(nextIndex)
+          console.log(`✓ Now on question ${nextIndex + 1}`)
+        }, 300)
+      } else {
+        console.log('⚠️ Cannot advance - already at last question position')
+      }
     }
   }
 

@@ -1,64 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { Resend } from 'resend';
+import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { Resend } from 'resend'
+import { generateIQReport } from '@/lib/pdf-generator'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
-});
+})
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const sig = req.headers.get('stripe-signature');
+  const body = await req.text()
+  const sig = req.headers.get('stripe-signature')
 
   if (!sig) {
-    return NextResponse.json({ error: 'No signature' }, { status: 400 });
+    return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
-  let event: Stripe.Event;
+  let event: Stripe.Event
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return NextResponse.json(
-      { error: 'Webhook signature verification failed' },
-      { status: 400 }
-    );
+    console.error('Webhook signature verification failed:', err)
+    return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 })
   }
 
   // Handle the event
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
+    const session = event.data.object as Stripe.Checkout.Session
 
     try {
       // Get metadata from session
-      const {
-        email,
-        iq_score,
-        raw_score,
-        percentile,
-        band,
-        bump,
-      } = session.metadata || {};
+      const { email, iq_score, raw_score, percentile, band, bump } = session.metadata || {}
 
       if (!email || !iq_score) {
-        console.error('Missing required metadata in session:', session.id);
-        return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
+        console.error('Missing required metadata in session:', session.id)
+        return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
       }
 
-      const hasBump = bump === 'true';
+      const hasBump = bump === 'true'
 
       // Get interpretation from metadata (it's already stored there from checkout)
-      const interpretation = session.metadata?.interpretation || 'Your cognitive assessment results show your current performance level.';
+      const interpretation =
+        session.metadata?.interpretation ||
+        'Your cognitive assessment results show your current performance level.'
 
-      // Send email with results
-      await resend.emails.send({
+      // Generate PDF if customer purchased the bump
+      let pdfBuffer: Buffer | null = null
+      if (hasBump) {
+        try {
+          console.log('📄 Generating personalized PDF report...')
+          pdfBuffer = await generateIQReport({
+            email,
+            iqScore: parseInt(iq_score),
+            rawScore: parseInt(raw_score || '0'),
+            percentile: parseInt(percentile || '0'),
+            band,
+            interpretation,
+          })
+          console.log('✅ PDF generated successfully')
+        } catch (pdfError) {
+          console.error('❌ PDF generation failed (will still send email):', pdfError)
+          // Continue without PDF - don't block email delivery
+        }
+      }
+
+      // Prepare email with optional PDF attachment
+      const emailOptions: any = {
         from: process.env.FROM_EMAIL!,
         to: email,
         subject: `Your IQ Snapshot Results - ${iq_score} IQ Score`,
@@ -71,21 +80,33 @@ export async function POST(req: NextRequest) {
           hasBump,
           vslUrl: process.env.NEXT_PUBLIC_AFFILIATE_VSL_URL || '',
         }),
-      });
+      }
 
-      console.log(`✅ Results email sent to ${email} (IQ: ${iq_score}, Bump: ${hasBump})`);
+      // Add PDF attachment if it was generated
+      if (pdfBuffer) {
+        emailOptions.attachments = [
+          {
+            filename: `IQ-Analysis-Report-${iq_score}.pdf`,
+            content: pdfBuffer,
+          },
+        ]
+      }
 
-      return NextResponse.json({ received: true });
+      // Send email with results
+      await resend.emails.send(emailOptions)
+
+      console.log(
+        `✅ Results email sent to ${email} (IQ: ${iq_score}, Bump: ${hasBump}, PDF: ${pdfBuffer ? 'attached' : 'none'})`
+      )
+
+      return NextResponse.json({ received: true })
     } catch (error) {
-      console.error('Error processing webhook:', error);
-      return NextResponse.json(
-        { error: 'Failed to process webhook' },
-        { status: 500 }
-      );
+      console.error('Error processing webhook:', error)
+      return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 })
     }
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json({ received: true })
 }
 
 // Email template
@@ -98,13 +119,13 @@ function generateResultsEmail({
   hasBump,
   vslUrl,
 }: {
-  iqScore: number;
-  rawScore: number;
-  percentile: number;
-  band: string;
-  interpretation: string;
-  hasBump: boolean;
-  vslUrl: string;
+  iqScore: number
+  rawScore: number
+  percentile: number
+  band: string
+  interpretation: string
+  hasBump: boolean
+  vslUrl: string
 }) {
   return `
 <!DOCTYPE html>
@@ -193,36 +214,34 @@ function generateResultsEmail({
                 </tr>
               </table>
 
-              ${hasBump ? `
+              ${
+                hasBump
+                  ? `
               <!-- PDF Report Section -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 30px; margin-bottom: 30px;">
                 <tr>
                   <td>
                     <h3 style="margin: 0 0 15px 0; color: #ffffff; font-size: 20px;">
-                      📊 Your Personalized PDF Report
+                      📊 Your Personalized PDF Report (Attached)
                     </h3>
                     <p style="margin: 0 0 20px 0; color: #e6e6ff; font-size: 15px; line-height: 1.5;">
-                      Your detailed cognitive analysis report includes:
+                      Your detailed 6-page cognitive analysis report is attached to this email. It includes:
                     </p>
                     <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #e6e6ff; font-size: 14px;">
-                      <li style="margin-bottom: 8px;">In-depth interpretation of your score</li>
-                      <li style="margin-bottom: 8px;">Cognitive strengths and growth areas</li>
-                      <li style="margin-bottom: 8px;">Personalized recommendations</li>
-                      <li style="margin-bottom: 8px;">Science-backed insights</li>
+                      <li style="margin-bottom: 8px;">In-depth interpretation of your ${iqScore} IQ score</li>
+                      <li style="margin-bottom: 8px;">Cognitive strengths and growth opportunities</li>
+                      <li style="margin-bottom: 8px;">7 science-backed strategies to enhance mental performance</li>
+                      <li style="margin-bottom: 8px;">Personalized development plan and next steps</li>
                     </ul>
-                    <table cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="background-color: #ffffff; border-radius: 6px; padding: 12px 30px;">
-                          <a href="#" style="color: #667eea; text-decoration: none; font-weight: bold; font-size: 16px;">
-                            Download Your PDF Report →
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
+                    <p style="margin: 0; color: #ffffff; font-size: 13px; background-color: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+                      💡 <strong>Tip:</strong> Download the PDF attachment at the bottom of this email. The file is named "IQ-Analysis-Report-${iqScore}.pdf"
+                    </p>
                   </td>
                 </tr>
               </table>
-              ` : ''}
+              `
+                  : ''
+              }
 
               <!-- VSL CTA -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7fafc; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
@@ -273,5 +292,5 @@ function generateResultsEmail({
   </table>
 </body>
 </html>
-  `;
+  `
 }

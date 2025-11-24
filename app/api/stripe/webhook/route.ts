@@ -7,7 +7,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
 
-const resend = new Resend(process.env.RESEND_API_KEY || '')
+// Initialize Resend lazily to avoid build-time errors
+let resendClient: Resend | null = null
+function getResendClient() {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY || 're_placeholder')
+  }
+  return resendClient
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -93,6 +100,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Send email with results
+      const resend = getResendClient()
       await resend.emails.send(emailOptions)
 
       console.log(

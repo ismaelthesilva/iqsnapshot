@@ -12,7 +12,7 @@ async function testPDF() {
     console.log('🧪 Testing PDF Generation...\n')
 
     // Import the PDF generator (use dynamic import for TypeScript/TSX)
-    const { generateIQReport } = await import('./lib/pdf-generator.tsx')
+    const { generateIQReport } = await import('../../lib/pdf-generator.tsx')
 
     // Test data
     const testData = {

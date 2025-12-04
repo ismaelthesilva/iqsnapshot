@@ -51,7 +51,7 @@ export const paywallCopy = {
     title: 'Add Personalized PDF Report',
     description:
       'Get a beautifully formatted PDF report with detailed breakdowns, charts, and actionable insights. Perfect for sharing or keeping as a record.',
-    price: '$7 (one-time)',
+    price: '$5 (one-time)',
   },
   cta: 'Unlock My Results for $1',
   disclaimer:
@@ -82,6 +82,5 @@ export const legalFooter = {
     { label: 'Privacy Policy', href: '/legal/privacy' },
   ],
   copyright: `© ${new Date().getFullYear()} The $1 IQ Snapshot. All rights reserved.`,
-  disclaimer:
-    'Educational and entertainment purposes only. Not a clinical assessment.',
+  disclaimer: 'Educational and entertainment purposes only. Not a clinical assessment.',
 }

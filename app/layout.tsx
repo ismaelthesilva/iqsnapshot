@@ -16,29 +16,27 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'The $1 IQ Snapshot - Discover Your Score in Minutes',
-    description: 'Take the IQ Snapshot test. Free to take, unlock your personalized score and percentile for just $1.',
+    description:
+      'Take the IQ Snapshot test. Free to take, unlock your personalized score and percentile for just $1.',
     type: 'website',
     images: ['/images/iq-logo.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'The $1 IQ Snapshot - Discover Your Score in Minutes',
-    description: 'Take the IQ Snapshot test. Free to take, unlock your personalized score and percentile for just $1.',
+    description:
+      'Take the IQ Snapshot test. Free to take, unlock your personalized score and percentile for just $1.',
     images: ['/images/iq-logo.png'],
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const isDev = process.env.NODE_ENV === 'development'
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
 
   return (
     <html lang="en">
       <body className={inter.className}>
-        {isDev && (
+        {isTestMode && (
           <div className="bg-yellow-500 text-black text-center py-1 text-sm font-semibold">
             TEST MODE - Use card 4242 4242 4242 4242
           </div>

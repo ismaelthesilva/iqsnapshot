@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     // Normalize and validate email
     const normalizedEmail = email?.toLowerCase().trim()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    
+
     if (!normalizedEmail || !emailRegex.test(normalizedEmail)) {
       return NextResponse.json({ error: 'Valid email is required' }, { status: 400 })
     }
@@ -71,15 +71,16 @@ export async function POST(req: NextRequest) {
     // Score the answers
     const scoreResult = scoreAnswers(answers)
 
-    // Create idempotency key
+    // Create idempotency key with timestamp to allow retries
     const normalizedAnswers = JSON.stringify(
       Object.keys(answers)
         .sort()
         .reduce((acc, key) => ({ ...acc, [key]: answers[key] }), {})
     )
+    const timestamp = Date.now()
     const idempotencyKey = crypto
       .createHash('sha256')
-      .update(`${normalizedEmail}-${normalizedAnswers}-${bump}`)
+      .update(`${normalizedEmail}-${normalizedAnswers}-${bump}-${timestamp}`)
       .digest('hex')
       .substring(0, 32)
 
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Order bump: Personalized PDF Report ($7)
+    // Order bump: Personalized PDF Report ($5)
     if (bump) {
       if (STRIPE_BUMP_PRICE_ID) {
         lineItems.push({ price: STRIPE_BUMP_PRICE_ID, quantity: 1 })
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
         lineItems.push({
           price_data: {
             currency: 'usd',
-            unit_amount: 700, // $7.00
+            unit_amount: 500, // $5.00
             product_data: {
               name: 'Personalized PDF Report',
               description: 'Detailed breakdown with charts and actionable insights',
@@ -133,28 +134,15 @@ export async function POST(req: NextRequest) {
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create(
       {
+        payment_method_types: ['card'],
         mode: 'payment',
+        customer_email: normalizedEmail,
+        // Note: allow_promotion_codes has limited support with price_data
+        // For full coupon support, use STRIPE_PRICE_ID instead of price_data
+        allow_promotion_codes: true,
         line_items: lineItems,
         success_url: `${SITE_URL}/results?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${SITE_URL}/test`,
-        customer_email: normalizedEmail,
-        payment_intent_data: {
-          metadata: {
-            email: normalizedEmail,
-            iqScore: scoreResult.iqScore.toString(),
-            rawScore: scoreResult.rawScore.toString(),
-            percentile: scoreResult.percentile.toString(),
-            band: scoreResult.band,
-            interpretation: scoreResult.interpretation,
-            bump: bump.toString(),
-            utm_source: utm.source || '',
-            utm_medium: utm.medium || '',
-            utm_campaign: utm.campaign || '',
-            price_disclosure_mode: variants.priceDisclosure || 'upfront',
-            headline_variant: variants.headline || 'A',
-            vsl_headline_variant: variants.vslHeadline || 'A',
-          },
-        },
         metadata: {
           email: normalizedEmail,
           iqScore: scoreResult.iqScore.toString(),
@@ -163,6 +151,8 @@ export async function POST(req: NextRequest) {
           band: scoreResult.band,
           bump: bump.toString(),
         },
+        // Explicitly set currency for coupon compatibility
+        currency: 'usd',
       },
       {
         idempotencyKey,
@@ -172,7 +162,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url })
   } catch (error: unknown) {
     console.error('Checkout error:', error)
-    
+
     // More specific error handling for Stripe errors
     if (error && typeof error === 'object' && 'type' in error) {
       const stripeError = error as { type: string; message: string; statusCode?: number }
@@ -181,7 +171,7 @@ export async function POST(req: NextRequest) {
         { status: stripeError.statusCode || 500 }
       )
     }
-    
+
     const message = error instanceof Error ? error.message : 'Failed to create checkout session'
     return NextResponse.json({ error: message }, { status: 500 })
   }

@@ -100,7 +100,7 @@ export default function PaywallModal({ isOpen, onClose, onCheckout, isLoading }:
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <div className="text-sm text-gray-600 mb-1">Total Today:</div>
             <div className="text-4xl font-bold text-gray-900">
-              ${includeBump ? '8.00' : '1.00'}
+              ${includeBump ? '6.00' : '1.00'}
             </div>
             <div className="text-sm text-gray-500 mt-1">One-time payment • No subscriptions</div>
           </div>

@@ -4,9 +4,12 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
+.vitest/
+*.lcov
 
 # next.js
 /.next/

@@ -51,7 +51,7 @@ export const paywallCopy = {
     title: 'Add Personalized PDF Report',
     description:
       'Get a beautifully formatted PDF report with detailed breakdowns, charts, and actionable insights. Perfect for sharing or keeping as a record.',
-    price: '$5 (one-time)',
+    price: '$7 (one-time)',
   },
   cta: 'Unlock My Results for $1',
   disclaimer:

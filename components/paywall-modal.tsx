@@ -20,7 +20,12 @@ interface PaywallModalProps {
   isLoading: boolean
 }
 
-export default function PaywallModal({ isOpen, onClose, onCheckout, isLoading }: PaywallModalProps) {
+export default function PaywallModal({
+  isOpen,
+  onClose,
+  onCheckout,
+  isLoading,
+}: PaywallModalProps) {
   const [includeBump, setIncludeBump] = useState(false)
 
   const handleCheckout = () => {
@@ -99,9 +104,7 @@ export default function PaywallModal({ isOpen, onClose, onCheckout, isLoading }:
           {/* Total Display */}
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <div className="text-sm text-gray-600 mb-1">Total Today:</div>
-            <div className="text-4xl font-bold text-gray-900">
-              ${includeBump ? '6.00' : '1.00'}
-            </div>
+            <div className="text-4xl font-bold text-gray-900">${includeBump ? '7.00' : '1.00'}</div>
             <div className="text-sm text-gray-500 mt-1">One-time payment • No subscriptions</div>
           </div>
 

@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Order bump: Personalized PDF Report ($5)
+    // Order bump: Personalized PDF Report ($7)
     if (bump) {
       if (STRIPE_BUMP_PRICE_ID) {
         lineItems.push({ price: STRIPE_BUMP_PRICE_ID, quantity: 1 })
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         lineItems.push({
           price_data: {
             currency: 'usd',
-            unit_amount: 500, // $5.00
+            unit_amount: 700, // $7.00
             product_data: {
               name: 'Personalized PDF Report',
               description: 'Detailed breakdown with charts and actionable insights',

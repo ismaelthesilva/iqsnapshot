@@ -99,7 +99,7 @@ describe('Checkout API Route', () => {
 
       expect(items).toHaveLength(2)
       expect(items[0].price_data.unit_amount).toBe(100) // Base $1.00
-      expect(items[1].price_data.unit_amount).toBe(500) // Bump $5.00
+      expect(items[1].price_data.unit_amount).toBe(700) // Bump $7.00
       expect(items[1].price_data.product_data.name).toContain('PDF Report')
     })
 
@@ -219,7 +219,7 @@ function generateLineItems(bump: boolean): LineItem[] {
     items.push({
       price_data: {
         currency: 'usd',
-        unit_amount: 500,
+        unit_amount: 700,
         product_data: {
           name: 'Personalized PDF Report',
           description: 'Detailed breakdown with charts and actionable insights',

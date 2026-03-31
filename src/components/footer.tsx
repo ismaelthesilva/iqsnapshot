@@ -17,7 +17,7 @@ export default function Footer() {
             />
           </Link>
         </div>
-        
+
         <div className="flex flex-wrap justify-center gap-6 mb-4">
           {legalFooter.links.map((link) => (
             <Link

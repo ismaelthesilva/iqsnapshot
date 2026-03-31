@@ -3,6 +3,7 @@
 This directory contains email templates for follow-up campaigns. The immediate result email is sent automatically via the webhook. These additional templates are provided for future use with an email service provider (ESP) like Resend, ConvertKit, or Mailchimp.
 
 ## Immediate Email (Automated)
+
 **Triggered by:** Stripe webhook on successful payment
 **Subject:** "Your IQ Snapshot Results Are Ready"
 **Sent via:** Webhook → Resend API
@@ -11,11 +12,13 @@ This directory contains email templates for follow-up campaigns. The immediate r
 ## Follow-up Email Templates
 
 ### Day 1 Follow-up
+
 **File:** `day-1-followup.html`
 **Timing:** 24 hours after purchase
 **Purpose:** Reinforce VSL offer, provide additional value
 
 ### Day 3 Follow-up
+
 **File:** `day-3-followup.html`
 **Timing:** 72 hours after purchase
 **Purpose:** Last chance reminder, social proof, testimonial
@@ -42,6 +45,7 @@ These templates are provided as static HTML files. To implement automated follow
 ## Variables to Replace
 
 When implementing, replace these placeholders:
+
 - `{{first_name}}` or use email address if name not collected
 - `{{iq_score}}`
 - `{{percentile}}`
@@ -51,6 +55,7 @@ When implementing, replace these placeholders:
 ## Compliance
 
 All follow-up emails must include:
+
 - Clear sender identification
 - Unsubscribe link (required by CAN-SPAM)
 - Physical mailing address

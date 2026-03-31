@@ -21,10 +21,7 @@ export async function POST(req: NextRequest) {
 
     // Verify payment status
     if (session.payment_status !== 'paid') {
-      return NextResponse.json(
-        { error: 'Payment not completed', paid: false },
-        { status: 402 }
-      )
+      return NextResponse.json({ error: 'Payment not completed', paid: false }, { status: 402 })
     }
 
     // Extract score data from metadata
@@ -34,10 +31,7 @@ export async function POST(req: NextRequest) {
         : session.metadata
 
     if (!metadata || !metadata.iqScore) {
-      return NextResponse.json(
-        { error: 'Result data not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Result data not found' }, { status: 404 })
     }
 
     // Return the score result

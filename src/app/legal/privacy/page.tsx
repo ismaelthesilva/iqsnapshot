@@ -18,7 +18,9 @@ export default function PrivacyPage() {
           <ul>
             <li>Email address</li>
             <li>Quiz answers</li>
-            <li>Payment information (processed and stored by Stripe; we do not store card details)</li>
+            <li>
+              Payment information (processed and stored by Stripe; we do not store card details)
+            </li>
           </ul>
 
           <h3>Automatically Collected Information</h3>
@@ -42,8 +44,8 @@ export default function PrivacyPage() {
           <h2>3. Data Storage and Security</h2>
           <ul>
             <li>
-              Your score results are stored in Stripe&apos;s secure payment metadata and are not stored
-              in a separate database.
+              Your score results are stored in Stripe&apos;s secure payment metadata and are not
+              stored in a separate database.
             </li>
             <li>We use industry-standard security measures to protect your data.</li>
             <li>Payment processing is handled by Stripe, which is PCI DSS Level 1 certified.</li>
@@ -111,9 +113,7 @@ export default function PrivacyPage() {
           </p>
 
           <h2>12. Contact Us</h2>
-          <p>
-            For privacy-related questions or requests, contact us at privacy@ismaelsilva.com
-          </p>
+          <p>For privacy-related questions or requests, contact us at privacy@ismaelsilva.com</p>
         </div>
       </main>
       <Footer />

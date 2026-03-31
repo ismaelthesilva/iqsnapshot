@@ -26,8 +26,7 @@ function ResultsContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const vslVariant: 'A' | 'B' =
-    (process.env.NEXT_PUBLIC_VSL_HEADLINE_VARIANT as 'A' | 'B') || 'A'
+  const vslVariant: 'A' | 'B' = (process.env.NEXT_PUBLIC_VSL_HEADLINE_VARIANT as 'A' | 'B') || 'A'
 
   useEffect(() => {
     if (!sessionId) {
@@ -88,8 +87,7 @@ function ResultsContent() {
     )
   }
 
-  const affiliateVslUrl =
-    process.env.NEXT_PUBLIC_AFFILIATE_VSL_URL || 'https://example.com/course'
+  const affiliateVslUrl = process.env.NEXT_PUBLIC_AFFILIATE_VSL_URL || 'https://example.com/course'
   const vslUrl = `${affiliateVslUrl}${affiliateVslUrl.includes('?') ? '&' : '?'}utm_source=iq-snapshot&utm_medium=web&utm_campaign=${vslVariant}&session_id=${sessionId}`
 
   return (
@@ -179,14 +177,16 @@ function ResultsContent() {
 
 export default function ResultsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your results...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your results...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ResultsContent />
     </Suspense>
   )

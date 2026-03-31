@@ -185,12 +185,7 @@ export const questions: Question[] = [
   {
     id: 'q23',
     text: 'Which two words are most similar in meaning?',
-    options: [
-      'Happy and Sad',
-      'Big and Large',
-      'Fast and Slow',
-      'Hot and Cold',
-    ],
+    options: ['Happy and Sad', 'Big and Large', 'Fast and Slow', 'Hot and Cold'],
     correctAnswer: 1,
     category: 'verbal',
   },

@@ -32,7 +32,7 @@ export default function TestPage() {
 
   const handleAnswer = (questionId: string, answer: string) => {
     console.log('🔵 handleAnswer called:', { questionId, answer, currentQuestion })
-    
+
     const newAnswers = { ...answers, [questionId]: answer }
     setAnswers(newAnswers)
 
@@ -48,7 +48,7 @@ export default function TestPage() {
       totalQuestions: questions.length,
       isLastQuestion,
       remainingQuestions: questions.length - totalAnswered,
-      nextQuestionIndex: currentQuestion + 1
+      nextQuestionIndex: currentQuestion + 1,
     })
 
     if (isLastQuestion) {
@@ -170,7 +170,9 @@ export default function TestPage() {
             </Button>
 
             <div className="text-sm text-gray-500">
-              {isComplete ? 'All questions answered!' : `${questions.length - Object.keys(answers).length} remaining`}
+              {isComplete
+                ? 'All questions answered!'
+                : `${questions.length - Object.keys(answers).length} remaining`}
             </div>
 
             {currentQuestion < questions.length - 1 ? (

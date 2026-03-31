@@ -15,8 +15,7 @@ export default function LandingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Get headline variant from env (would be server-side in production)
-  const headlineVariant: 'A' | 'B' =
-    (process.env.NEXT_PUBLIC_HEADLINE_VARIANT as 'A' | 'B') || 'A'
+  const headlineVariant: 'A' | 'B' = (process.env.NEXT_PUBLIC_HEADLINE_VARIANT as 'A' | 'B') || 'A'
   const priceDisclosure =
     (process.env.NEXT_PUBLIC_PRICE_DISCLOSURE_MODE as 'upfront' | 'soft') || 'upfront'
 
@@ -130,7 +129,9 @@ export default function LandingPage() {
               <div className="flex flex-col items-center">
                 <CheckCircle2 className="h-12 w-12 text-blue-600 mb-4" />
                 <h3 className="font-semibold mb-2">One-Time Fee</h3>
-                <p className="text-sm text-gray-600">No subscriptions. No recurring charges. Just $1.</p>
+                <p className="text-sm text-gray-600">
+                  No subscriptions. No recurring charges. Just $1.
+                </p>
               </div>
             </div>
           </div>

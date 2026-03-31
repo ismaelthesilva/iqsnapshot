@@ -3,6 +3,7 @@
 ## Files Configured
 
 ### 1. **Favicon (Browser Tab Icon)**
+
 - **Location**: `public/images/iq-logo-favicon.png` and `public/favicon.ico`
 - **Configured in**: `app/layout.tsx`
 - **Implementation**:
@@ -15,6 +16,7 @@
 - **Result**: Your logo now appears in browser tabs and when users bookmark your site
 
 ### 2. **Header Logo (Top of Pages)**
+
 - **Location**: `components/header.tsx` (newly created)
 - **Displays on**:
   - Landing page (`app/(marketing)/page.tsx`)
@@ -37,6 +39,7 @@
   - Positioned with site title
 
 ### 3. **Footer Logo**
+
 - **Location**: `components/footer.tsx` (updated)
 - **Displays on**: All pages (via layout)
 - **Implementation**:
@@ -56,6 +59,7 @@
   - 48x48px sizing
 
 ### 4. **Open Graph / Social Media Preview**
+
 - **Configured in**: `app/layout.tsx`
 - **Implementation**:
   ```tsx
@@ -121,6 +125,7 @@ app/
 ## Open Graph Testing
 
 After deploying to production (https://iq.ismaelsilva.com), test social previews:
+
 - **Facebook**: https://developers.facebook.com/tools/debug/
 - **Twitter**: https://cards-dev.twitter.com/validator
 - **LinkedIn**: Just paste the URL in a LinkedIn post draft to preview

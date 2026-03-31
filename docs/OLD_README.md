@@ -170,6 +170,7 @@ Follow prompts to create a new project.
 ### 2. Configure Custom Domain
 
 In Vercel dashboard:
+
 1. Go to Project Settings → Domains
 2. Add `iq.ismaelsilva.com`
 3. Follow DNS configuration instructions
@@ -274,14 +275,17 @@ vercel --prod
 Controlled via environment variables:
 
 ### `PRICE_DISCLOSURE_MODE`
+
 - **`upfront`** (default): Shows "$1 to unlock your results" on landing page
 - **`soft`**: Shows price disclosure only at start of quiz
 
 ### `HEADLINE_VARIANT`
+
 - **`A`**: "How Smart Are You Compared to Other Americans? Take The $1 IQ Snapshot."
 - **`B`**: "7‑Minute IQ Snapshot: Discover Your Score and Percentile for Just $1."
 
 ### `VSL_HEADLINE_VARIANT`
+
 - **`A`**: "Boost Your Cognitive Edge in 30 Days — The Science‑Backed System."
 - **`B`**: "Turn Your IQ Insights into Daily Performance Gains — Here's How."
 
@@ -294,6 +298,7 @@ Variant data is captured in Stripe metadata for each checkout session.
 3. **OTO (Affiliate):** VSL on results page with commission tracking
 
 **UTM Tracking:**
+
 ```
 ?utm_source=iq-snapshot
 &utm_medium=email|web
@@ -304,16 +309,19 @@ Variant data is captured in Stripe metadata for each checkout session.
 ## 🎨 Brunson Framework Alignment
 
 ### Hook
+
 - Curiosity-driven headline with social comparison
 - Trust badge ("Trusted by 1,000+ test-takers")
 - Clear value proposition
 
 ### Story
+
 - "What You'll Discover" section with benefit bullets
 - "Why $1?" transparency section
 - Trust indicators (Stripe, instant delivery, one-time fee)
 
 ### Offer
+
 - Email capture + CTA
 - $1 unlock (tripwire)
 - $7 order bump (increase AOV)
@@ -322,11 +330,13 @@ Variant data is captured in Stripe metadata for each checkout session.
 ## 📧 Email Strategy
 
 ### Immediate (Automated)
+
 - **Trigger:** Stripe webhook `checkout.session.completed`
 - **Content:** Results + VSL link + affiliate disclosure
 - **Delivery:** Resend API via webhook handler
 
 ### Follow-Ups (Manual Setup Required)
+
 - **Day 1:** Reinforce VSL offer, provide additional value
 - **Day 3:** Last chance reminder, social proof, urgency
 
@@ -335,6 +345,7 @@ Templates located in `emails/templates/`. See `emails/README.md` for implementat
 ## 🛠️ Technical Decisions
 
 ### Why No Database?
+
 - **Simplicity:** Fewer moving parts = fewer failure points
 - **Security:** No PII storage beyond payment processor
 - **Cost:** No database hosting fees
@@ -342,12 +353,14 @@ Templates located in `emails/templates/`. See `emails/README.md` for implementat
 - **Scalability:** Stateless architecture scales horizontally
 
 ### Why Stripe Metadata?
+
 - Built-in data persistence with payment records
 - Automatic PCI compliance
 - Stripe's durability and redundancy
 - Easy retrieval via session ID
 
 ### Why Next.js App Router?
+
 - Server components for better SEO
 - API routes with proper Node.js runtime for webhooks
 - Built-in optimization (images, fonts)

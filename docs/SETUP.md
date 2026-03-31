@@ -112,12 +112,15 @@ components/
 ## Key Features
 
 ### No Database
+
 All score data stored in Stripe metadata. No need for Postgres, MongoDB, etc.
 
 ### Webhook-Based Email
+
 Payment completion triggers webhook → sends result email via Resend.
 
 ### A/B Testing
+
 ```env
 PRICE_DISCLOSURE_MODE=upfront|soft
 HEADLINE_VARIANT=A|B
@@ -125,6 +128,7 @@ VSL_HEADLINE_VARIANT=A|B
 ```
 
 ### Security
+
 - Server-only secrets
 - Webhook signature verification
 - Input validation

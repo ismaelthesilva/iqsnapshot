@@ -13,9 +13,7 @@ export function Header() {
             height={48}
             className="rounded-lg"
           />
-          <span className="text-xl font-bold text-gray-900">
-            The $1 IQ Snapshot
-          </span>
+          <span className="text-xl font-bold text-gray-900">The $1 IQ Snapshot</span>
         </Link>
       </div>
     </header>

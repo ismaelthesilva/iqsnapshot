@@ -76,6 +76,7 @@ iqsnapshot/
 ## Key Architectural Patterns
 
 ### 1. Server-Only Secrets
+
 ```
 lib/stripe.ts     → Server-only (STRIPE_SECRET_KEY)
 lib/email.ts      → Server-only (RESEND_API_KEY)
@@ -83,6 +84,7 @@ app/api/*         → All API routes are server-side
 ```
 
 ### 2. Client Components (Minimal)
+
 ```
 'use client' directive only where needed:
   - page.tsx files (interactive forms)
@@ -91,6 +93,7 @@ app/api/*         → All API routes are server-side
 ```
 
 ### 3. Data Flow (No Database)
+
 ```
 Quiz answers → API route → Score calculation
                          → Stripe Checkout metadata
@@ -99,6 +102,7 @@ Quiz answers → API route → Score calculation
 ```
 
 ### 4. Security Layers
+
 ```
 Input Validation → Rate Limiting → Idempotency
                                  → Webhook Signature
@@ -108,6 +112,7 @@ Input Validation → Rate Limiting → Idempotency
 ## Dependency Map
 
 ### Production Dependencies
+
 - `next` ^14.2.0 - App Router framework
 - `react` ^18.3.0 - UI library
 - `stripe` ^14.14.0 - Payment processing
@@ -118,6 +123,7 @@ Input Validation → Rate Limiting → Idempotency
 - `jsonwebtoken` - Optional result tokens
 
 ### Development Dependencies
+
 - `typescript` ^5.3.3 - Type safety
 - `@types/node` - Node.js types
 - `eslint` - Code linting
@@ -126,6 +132,7 @@ Input Validation → Rate Limiting → Idempotency
 ## Environment Variables (12 total)
 
 ### Required (6)
+
 1. `NEXT_PUBLIC_SITE_URL` - Public site URL
 2. `STRIPE_SECRET_KEY` - Stripe API key
 3. `STRIPE_WEBHOOK_SECRET` - Webhook signature secret
@@ -134,6 +141,7 @@ Input Validation → Rate Limiting → Idempotency
 6. `AFFILIATE_VSL_URL` - Affiliate link
 
 ### Optional (6)
+
 7. `STRIPE_PRICE_ID` - Pre-created $1 price
 8. `STRIPE_BUMP_PRICE_ID` - Pre-created $7 price
 9. `RESULT_JWT_SECRET` - JWT secret for tokens
@@ -144,7 +152,9 @@ Input Validation → Rate Limiting → Idempotency
 ## API Endpoints (3)
 
 ### POST /api/checkout
+
 **Input:**
+
 ```json
 {
   "email": "user@example.com",
@@ -154,7 +164,9 @@ Input Validation → Rate Limiting → Idempotency
   "variants": {"priceDisclosure": "upfront", ...}
 }
 ```
+
 **Output:**
+
 ```json
 {
   "url": "https://checkout.stripe.com/..."
@@ -162,13 +174,17 @@ Input Validation → Rate Limiting → Idempotency
 ```
 
 ### POST /api/results
+
 **Input:**
+
 ```json
 {
   "session_id": "cs_xxx"
 }
 ```
+
 **Output:**
+
 ```json
 {
   "paid": true,
@@ -184,6 +200,7 @@ Input Validation → Rate Limiting → Idempotency
 ```
 
 ### POST /api/stripe/webhook
+
 **Input:** Stripe webhook event (signature verified)
 **Output:** `{ received: true }`
 **Side Effect:** Sends result email via Resend
@@ -218,12 +235,14 @@ RootLayout
 ## Scoring System
 
 **Questions:** 25 total
+
 - 8 Verbal reasoning
 - 6 Numerical reasoning
 - 5 Logical reasoning
 - 6 Spatial reasoning
 
 **Algorithm:**
+
 ```
 rawScore = count of correct answers
 zScore = (rawScore - 12.5) / 4.0
@@ -232,6 +251,7 @@ Clamped to [70, 145]
 ```
 
 **Bands:**
+
 - 70-84: Below Average (16th percentile)
 - 85-99: Average (42nd percentile)
 - 100-114: Above Average (75th percentile)
@@ -297,17 +317,17 @@ Clamped to [70, 145]
 
 ## Tech Stack Summary
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | Next.js 14 App Router | React framework with server components |
-| **Styling** | Tailwind CSS | Utility-first CSS framework |
-| **UI Components** | shadcn/ui + Radix UI | Accessible, unstyled primitives |
-| **Icons** | Lucide React | Open-source icon library |
-| **Payment** | Stripe Checkout | PCI-compliant payment processing |
-| **Email** | Resend | Transactional email API |
-| **Hosting** | Vercel | Edge deployment, CDN, CI/CD |
-| **Database** | None (Stripe metadata) | Stateless architecture |
-| **Analytics** | Manual (Stripe metadata) | UTM + variant tracking |
+| Layer             | Technology               | Purpose                                |
+| ----------------- | ------------------------ | -------------------------------------- |
+| **Frontend**      | Next.js 14 App Router    | React framework with server components |
+| **Styling**       | Tailwind CSS             | Utility-first CSS framework            |
+| **UI Components** | shadcn/ui + Radix UI     | Accessible, unstyled primitives        |
+| **Icons**         | Lucide React             | Open-source icon library               |
+| **Payment**       | Stripe Checkout          | PCI-compliant payment processing       |
+| **Email**         | Resend                   | Transactional email API                |
+| **Hosting**       | Vercel                   | Edge deployment, CDN, CI/CD            |
+| **Database**      | None (Stripe metadata)   | Stateless architecture                 |
+| **Analytics**     | Manual (Stripe metadata) | UTM + variant tracking                 |
 
 ---
 

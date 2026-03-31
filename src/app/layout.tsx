@@ -34,8 +34,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
 
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         {isTestMode && (
           <div className="bg-yellow-500 text-black text-center py-1 text-sm font-semibold">
             TEST MODE - Use card 4242 4242 4242 4242

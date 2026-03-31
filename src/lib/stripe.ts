@@ -20,7 +20,7 @@ export const stripe = new Proxy({} as Stripe, {
   get: (target, prop) => {
     const stripe = getStripe()
     return stripe[prop as keyof Stripe]
-  }
+  },
 })
 
 export const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID
